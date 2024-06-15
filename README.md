@@ -1,2 +1,3 @@
-# pydantic-cdp
-Pydantic Chrome Devtools Protocol
+# cidipi
+
+Python Chrome Devtools Protocol

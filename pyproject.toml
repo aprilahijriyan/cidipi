@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "cidipi"
+version = "0.1.0"
+description = "Python Chrome Devtools Protocol"
+authors = ["Aprila Hijriyan <hijriyan23@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pydantic = "^2.7.4"
+
+
+[tool.poetry.group.dev.dependencies]
+orjson = "^3.10.5"
+loguru = "^0.7.2"
+pyhumps = "^3.8.0"
+pre-commit = "^3.7.1"
+autoflake = "^2.3.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+ignore = [
+    "F403", "F405", # ignore star imports
+    "F722" # Syntax error in forward annotation
+]
