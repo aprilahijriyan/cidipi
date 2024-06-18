@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "cidipi"
 version = "0.1.0"
-description = "Python Chrome Devtools Protocol"
+description = "Low-level client for interacting with Chrome Devtools Protocol (CDP) for Python."
 authors = ["Aprila Hijriyan <hijriyan23@gmail.com>"]
 license = "MIT"
 readme = "README.md"
