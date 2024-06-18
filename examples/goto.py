@@ -20,7 +20,6 @@ async def wait_for(event: str):
         if method == cdp_event_name:
             obj = cdp_event_klass(**message["params"])
             if obj.name == event:
-                print("Matched event:", obj)
                 event_emitter.remove_listener(cdp_event_name, on_lifecycle_event)
                 done.set()
 
@@ -35,7 +34,6 @@ async def main():
             await tab.execute(commands.Page.setLifecycleEventsEnabled(enabled=True))
             await tab.execute(commands.Page.navigate(url="https://www.python.org"))
             await wait_for("networkIdle")
-            # print("examples/goto:", result)
             input("Press Enter to continue...")
 
 
