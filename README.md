@@ -8,7 +8,7 @@ Low-level client for interacting with Chrome Devtools Protocol (CDP) for Python.
 ## Installation
 
 ```bash
-pip install cidipi
+pip install --pre cidipi
 ```
 
 ## Usage
