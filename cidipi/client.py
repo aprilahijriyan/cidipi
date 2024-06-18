@@ -126,7 +126,7 @@ class Browser:
             try:
                 self.metadata
                 return True
-            except requests.errors.RequestsError:
+            except (requests.errors.RequestsError, requests.errors.CurlError):
                 time.sleep(next_delay)
 
             next_delay *= i
