@@ -34,7 +34,6 @@ CHROME_PATH_MAPPING = {
         "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
     ],
 }
-CHROME_PATHS = CHROME_PATH_MAPPING[platform.system()]
 
 
 class Browser:
@@ -49,6 +48,7 @@ class Browser:
         headless: Optional[bool] = True,
         user_agent: Optional[str] = None,
         proxy: Optional[str] = None,
+        remote_uri: Optional[str] = None,
     ):
         self.start_url = start_url
         self.chrome_path = (
@@ -60,6 +60,7 @@ class Browser:
         self.headless = headless
         self.user_agent = user_agent
         self.proxy = proxy
+        self.remote_uri = remote_uri or os.getenv("CHROME_REMOTE_URI")
         self.process: Optional[subprocess.Popen] = None
 
     def find_chrome_path(self):
@@ -69,6 +70,11 @@ class Browser:
                     return path
 
     def check_port(self):
+        if self.remote_uri:
+            raise RuntimeError(
+                "Open port checking is not available when you use Chrome in a different process."
+            )
+
         if self.remote_port == 0:
             self.remote_port = find_free_port()
             logger.debug(f"Using free port: {self.remote_port}")
@@ -112,29 +118,36 @@ class Browser:
         return self.process.poll() is None
 
     def start(self):
-        if self.is_alive:
-            return True
+        if not self.remote_uri:
+            if self.is_alive:
+                return True
 
-        # kill the old process if it exists
-        self.close()
-        cmd = subprocess.list2cmdline(self.get_browser_args())
-        self.process = subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
+            # kill the old process if it exists
+            self.close()
+            cmd = subprocess.list2cmdline(self.get_browser_args())
+            self.process = subprocess.Popen(
+                cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+        else:
+            logger.warning(
+                "You use Chrome in different processes (Just letting you know)"
+            )
         return self.chrome_ready()
 
     def chrome_ready(self, max_retries: int = 10, delay: float = 1.0):
-        assert self.is_alive
+        if not self.remote_uri:
+            assert self.is_alive
+
         next_delay = delay
         for i in range(max_retries):
             attempt = i + 1
             try:
                 self.metadata
-                logger.debug(f"Chrome ready on {self.remote_host}:{self.remote_port}")
+                logger.debug(f"Chrome ready on {self.http_uri}")
                 return True
             except (requests.errors.RequestsError, requests.errors.CurlError):
                 logger.debug(
-                    f"Chrome not ready on {self.remote_host}:{self.remote_port} (attempt {attempt}/{max_retries})"
+                    f"Chrome not ready on {self.http_uri} (attempt {attempt}/{max_retries})"
                 )
                 time.sleep(next_delay)
 
@@ -144,9 +157,7 @@ class Browser:
 
     def close(self):
         if self.process:
-            logger.debug(
-                f"Killing Chrome on {self.remote_host}:{self.remote_port} (PID {self.process.pid})"
-            )
+            logger.debug(f"Killing Chrome on {self.http_uri} (PID {self.process.pid})")
             kill_pid(self.process.pid)
 
     async def __aenter__(self):
@@ -158,6 +169,8 @@ class Browser:
 
     @property
     def http_uri(self):
+        if self.remote_uri:
+            return self.remote_uri
         return f"http://{self.remote_host}:{self.remote_port}"
 
     @property
