@@ -11,9 +11,9 @@ python = "^3.9"
 pydantic = "^2.7.4"
 psutil = "^5.9.8"
 curl-cffi = "^0.6.4"
-pyee = "^11.1.0"
 websockets = "^12.0"
 pyhumps = "^3.8.0"
+async-timeout = "^4.0.3"
 
 [tool.poetry.group.dev.dependencies]
 orjson = "^3.10.5"
@@ -30,3 +30,8 @@ ignore = [
     "F403", "F405", # ignore star imports
     "F722" # Syntax error in forward annotation
 ]
+
+[tool.isort]
+line_length = 80
+profile = "black"
+remove_redundant_aliases = true

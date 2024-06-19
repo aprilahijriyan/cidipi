@@ -1,3 +1,4 @@
+import logging
 import os
 import platform
 import subprocess
@@ -8,8 +9,10 @@ from urllib.parse import quote_plus
 
 from curl_cffi import requests
 
-from cidipi.models import ListTabAdapter, Tab
+from cidipi.models import BrowserMetadata, ListTabAdapter, Tab
 from cidipi.utils import find_free_port, kill_pid, test_port
+
+logger = logging.getLogger(__name__)
 
 CHROME_PATH_MAPPING = {
     "Windows": [
@@ -68,6 +71,7 @@ class Browser:
     def check_port(self):
         if self.remote_port == 0:
             self.remote_port = find_free_port()
+            logger.debug(f"Using free port: {self.remote_port}")
         else:
             port_available = test_port(self.remote_port)
             if not port_available:
@@ -123,17 +127,26 @@ class Browser:
         assert self.is_alive
         next_delay = delay
         for i in range(max_retries):
+            attempt = i + 1
             try:
                 self.metadata
+                logger.debug(f"Chrome ready on {self.remote_host}:{self.remote_port}")
                 return True
             except (requests.errors.RequestsError, requests.errors.CurlError):
+                logger.debug(
+                    f"Chrome not ready on {self.remote_host}:{self.remote_port} (attempt {attempt}/{max_retries})"
+                )
                 time.sleep(next_delay)
 
-            next_delay *= i
+            next_delay = delay * attempt
+
         return False
 
     def close(self):
         if self.process:
+            logger.debug(
+                f"Killing Chrome on {self.remote_host}:{self.remote_port} (PID {self.process.pid})"
+            )
             kill_pid(self.process.pid)
 
     async def __aenter__(self):
@@ -151,7 +164,7 @@ class Browser:
     def metadata(self):
         url = self.http_uri + "/json/version"
         resp = requests.get(url)
-        return resp.json()
+        return BrowserMetadata.model_validate_json(resp.content)
 
     def get_tabs(self) -> list[Tab]:
         url = self.http_uri + "/json/list"
@@ -162,9 +175,10 @@ class Browser:
             tabs.append(t)
         return tabs
 
-    def new_tab(self, url: str = "about:blank"):
+    def new_tab(self, url: str = "about:blank", auto_close: bool = True):
         url = self.http_uri + "/json/new?%s" % quote_plus(url)
         resp = requests.put(url)
         tab = Tab.model_validate_json(resp.content)
         tab._browser = self
+        tab.set_auto_close(auto_close)
         return tab
