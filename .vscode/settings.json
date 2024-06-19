@@ -2,6 +2,7 @@
     "conventionalCommits.scopes": [
         "deps",
         "client",
-        "package"
+        "package",
+        "devtools"
     ]
 }
