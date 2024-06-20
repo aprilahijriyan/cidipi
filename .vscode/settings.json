@@ -3,6 +3,7 @@
         "deps",
         "client",
         "package",
-        "devtools"
+        "devtools",
+        "project"
     ]
 }
