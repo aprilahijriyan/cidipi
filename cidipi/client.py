@@ -62,6 +62,7 @@ class Browser:
         self.proxy = proxy
         self.remote_uri = remote_uri or os.getenv("CHROME_REMOTE_URI")
         self.process: Optional[subprocess.Popen] = None
+        self._metadata: Optional[BrowserMetadata] = None
 
     def find_chrome_path(self):
         with suppress(KeyError):
@@ -175,9 +176,13 @@ class Browser:
 
     @property
     def metadata(self):
+        if self._metadata:
+            return self._metadata
+
         url = self.http_uri + "/json/version"
         resp = requests.get(url)
-        return BrowserMetadata.model_validate_json(resp.content)
+        self._metadata = BrowserMetadata.model_validate_json(resp.content)
+        return self._metadata
 
     def get_tabs(self) -> list[Tab]:
         url = self.http_uri + "/json/list"
