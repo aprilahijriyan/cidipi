@@ -1914,7 +1914,9 @@ instead of "limited-quirks".
         ClientMetadataNoResponse = "ClientMetadataNoResponse"
         ClientMetadataInvalidResponse = "ClientMetadataInvalidResponse"
         ClientMetadataInvalidContentType = "ClientMetadataInvalidContentType"
+        IdpNotPotentiallyTrustworthy = "IdpNotPotentiallyTrustworthy"
         DisabledInSettings = "DisabledInSettings"
+        DisabledInFlags = "DisabledInFlags"
         ErrorFetchingSignin = "ErrorFetchingSignin"
         InvalidSigninResponse = "InvalidSigninResponse"
         AccountsHttpNotFound = "AccountsHttpNotFound"
@@ -1937,6 +1939,7 @@ instead of "limited-quirks".
         NotSignedInWithIdp = "NotSignedInWithIdp"
         MissingTransientUserActivation = "MissingTransientUserActivation"
         ReplacedByButtonMode = "ReplacedByButtonMode"
+        InvalidFieldsSpecified = "InvalidFieldsSpecified"
         RelyingPartyOriginIsOpaque = "RelyingPartyOriginIsOpaque"
         TypeNotMatching = "TypeNotMatching"
 
@@ -2406,6 +2409,10 @@ Note that userVisibleOnly = true is the only currently supported type.
         allowWithoutSanitization: Optional[bool] = None
         """
         For "clipboard" permission, may specify allowWithoutSanitization.
+        """
+        allowWithoutGesture: Optional[bool] = None
+        """
+        For "fullscreen" permission, must specify allowWithoutGesture:true.
         """
         panTiltZoom: Optional[bool] = None
         """
@@ -3218,6 +3225,7 @@ stylesheet rules) this rule came from.
         """
         Associated style declaration.
         """
+        active: bool
 
     class TypeCSSKeyframesRule(BaseModel):
         """
@@ -10070,3 +10078,11 @@ https://www.iana.org/assignments/media-types/media-types.xhtml
         action: str
         accepts: list[Any]
         displayName: str
+
+    class TypeDisplayMode(str, Enum):
+        """
+        If user prefers opening the app in browser or an app window.
+        """
+
+        standalone = "standalone"
+        browser = "browser"

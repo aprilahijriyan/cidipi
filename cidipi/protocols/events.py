@@ -1767,6 +1767,13 @@ preemptively (e.g. a cache hit).
         The number of obtained Trust Tokens on a successful "Issuance" operation.
         """
 
+    class policyUpdated(IEvent):
+        """
+        Fired once security policy has been updated.
+        """
+
+        _domain: str = PrivateAttr("Network")
+
     class subresourceWebBundleMetadataReceived(IEvent):
         """
                 Fired once when parsing the .wbn file has succeeded.
